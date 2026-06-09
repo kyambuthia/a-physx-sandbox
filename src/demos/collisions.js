@@ -6,6 +6,8 @@ import { addPostStepHook } from '../systems.js'
 import { startLoop } from '../loop.js'
 
 const FLASH_DURATION = 0.3
+const MAX_MARKERS = 20
+const MARKER_COOLDOWN_MS = 400
 
 export default async function demoCollisions() {
   const jolt = await initPhysics()
@@ -17,6 +19,7 @@ export default async function demoCollisions() {
 
   const contactMarkers = []
   const activeFlashes = []
+  const pairCooldowns = new Map()
 
   const contactListener = new jolt.ContactListenerJS()
   contactListener.OnContactAdded = (body1Ptr, body2Ptr, manifoldPtr) => {
@@ -29,11 +32,23 @@ export default async function demoCollisions() {
     const b = getBallByBodyId(id2)
     if (!a || !b) return
 
+    flashBall(a, activeFlashes)
+    flashBall(b, activeFlashes)
+
+    const pairKey = id1 < id2 ? `${id1}-${id2}` : `${id2}-${id1}`
+    const now = performance.now()
+    if (now - (pairCooldowns.get(pairKey) || 0) < MARKER_COOLDOWN_MS) return
+    pairCooldowns.set(pairKey, now)
+
     const manifold = jolt.wrapPointer(manifoldPtr, jolt.ContactManifold)
     const cp = manifold.GetWorldSpaceContactPointOn1(0)
 
-    flashBall(a, activeFlashes)
-    flashBall(b, activeFlashes)
+    while (contactMarkers.length >= MAX_MARKERS) {
+      const old = contactMarkers.shift()
+      getScene().remove(old.mesh)
+      old.mesh.geometry.dispose()
+      old.mesh.material.dispose()
+    }
 
     const marker = new THREE.Mesh(
       new THREE.SphereGeometry(0.08, 8, 8),
@@ -43,6 +58,8 @@ export default async function demoCollisions() {
     getScene().add(marker)
     contactMarkers.push({ mesh: marker, age: 0 })
   }
+  contactListener.OnContactPersisted = () => {}
+  contactListener.OnContactRemoved = () => {}
 
   getPhysicsSystem().SetContactListener(contactListener)
 
