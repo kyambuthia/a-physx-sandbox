@@ -6,6 +6,14 @@ let spawnTimer = 0
 
 export function resetSpawnTimer() { spawnTimer = 0 }
 
+const postStepHooks = []
+
+export function addPostStepHook(fn) { postStepHooks.push(fn) }
+
+export function runPostStep(delta) {
+  for (const fn of postStepHooks) fn(delta)
+}
+
 export function updateSpawning(delta) {
   spawnTimer += delta
   if (spawnTimer >= SPAWN_INTERVAL && getBallCount() < BALL_COUNT) {

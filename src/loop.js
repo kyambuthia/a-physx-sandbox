@@ -1,6 +1,6 @@
 import { TIME_STEP } from './config.js'
 import { getRenderer, getScene, getCamera, getControls } from './scene.js'
-import { updateSpawning, stepPhysics, syncBodies } from './systems.js'
+import { updateSpawning, stepPhysics, syncBodies, runPostStep } from './systems.js'
 
 export function startLoop() {
   function animate() {
@@ -9,6 +9,7 @@ export function startLoop() {
     updateSpawning(TIME_STEP)
     stepPhysics(TIME_STEP)
     syncBodies()
+    runPostStep(TIME_STEP)
 
     getControls().update()
     getRenderer().render(getScene(), getCamera())

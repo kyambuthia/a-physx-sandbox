@@ -13,6 +13,26 @@ let ballCount = 0
 export function getBalls() { return balls }
 export function getBallCount() { return ballCount }
 
+const bodyToBall = new Map()
+
+export function getBallByBodyId(bodyId) {
+  return bodyToBall.get(bodyId)
+}
+
+export function removeBall(entry) {
+  const idx = balls.indexOf(entry)
+  if (idx !== -1) {
+    balls.splice(idx, 1)
+    ballCount--
+  }
+  const id = entry.body.GetID().GetIndexAndSequenceNumber()
+  bodyToBall.delete(id)
+  getBodyInterface().DestroyBody(entry.body.GetID())
+  getScene().remove(entry.mesh)
+  entry.mesh.geometry.dispose()
+  entry.mesh.material.dispose()
+}
+
 export function spawnBall() {
   if (ballCount >= BALL_COUNT) return null
 
@@ -48,8 +68,9 @@ export function spawnBall() {
   mesh.receiveShadow = true
   scene.add(mesh)
 
-  const entry = { body, mesh }
+  const entry = { body, mesh, radius, color }
   balls.push(entry)
   ballCount++
+  bodyToBall.set(body.GetID().GetIndexAndSequenceNumber(), entry)
   return entry
 }

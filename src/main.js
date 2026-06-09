@@ -6,6 +6,21 @@ const demos = {
     desc: 'Jolt physics + Three.js — 20 spheres with restitution, shadow maps, orbit controls',
     load: () => import('./demos/bouncing-balls.js'),
   },
+  'raycasting': {
+    name: 'Raycasting',
+    desc: 'Three.js Raycaster — click spheres to select, hit markers at intersection points',
+    load: () => import('./demos/raycasting.js'),
+  },
+  'collisions': {
+    name: 'Collisions',
+    desc: 'Jolt contact listener — flash on impact, contact-point markers at collision sites',
+    load: () => import('./demos/collisions.js'),
+  },
+  'destruction': {
+    name: 'Destruction',
+    desc: 'High-velocity collisions shatter balls into glowing fragments with explosion physics',
+    load: () => import('./demos/destruction.js'),
+  },
 }
 
 const app = document.getElementById('app')
